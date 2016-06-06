@@ -1,0 +1,88 @@
+#!/bin/sh
+#
+# diffusion Diffusion service
+#
+# chkconfig: - 80 20
+# description: Start/Stop script for Diffusion
+#
+
+
+### BEGIN INIT INFO
+# Provides: diffusion
+# Required-Start: $network
+# Required-Stop: $network
+# Description: Diffusion
+# Short-Description: start and stop Diffusion
+### END INIT INFO
+
+export DIFFUSION_HOME=/opt/diffusion
+servicename=diffusion
+pidfile=/var/run/$servicename.pid
+
+. /etc/rc.d/init.d/functions
+
+start_diffusion () {
+status_diffusion quiet
+if [ $RETVAL = 0 ]; then
+echo Diffusion is currently running
+else
+daemon --check $servicename --user tomcat "$DIFFUSION_HOME/bin/diffusion.sh >$DIFFUSION_HOME/logs/stdout 2>$DIFFUSION_HOME/logs/stderr &"
+sleep 2
+pid=`ps auxww | grep -v grep | grep java | grep diffusion | awk '{print $2'}`
+if [ ! -z "$pid" ]; then
+echo $pid > $pidfile
+else
+rm $pidfile
+fi
+fi
+}
+
+stop_diffusion () {
+status_diffusion #quiet parameter removed
+if [ $RETVAL = 0 ]; then
+killproc $servicename
+else
+echo "Diffusion is not running"
+fi
+rm $pidfile >/dev/null 2>&1
+}
+
+status_diffusion() {
+RETVAL=0
+if [ "$1" = "quiet" ]; then
+status $servicename >/dev/null 2>&1
+else
+status $servicename 2>&1
+fi
+if [ $? != 0 ]; then
+RETVAL=3
+fi
+}
+
+restart_diffusion() {
+stop_diffusion
+start_diffusion
+}
+
+case "$1" in
+start)
+start_diffusion
+;;
+stop)
+stop_diffusion
+;;
+status)
+status_diffusion
+;;
+reload|restart)
+restart_diffusion
+;;
+*)
+echo "Usage: $0 {start|stop|status|restart}" >&2
+RETVAL=1
+;;
+esac
+
+echo ""
+exit $RETVAL
+

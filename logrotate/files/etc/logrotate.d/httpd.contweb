@@ -1,0 +1,16 @@
+/var/log/httpd/*log {
+        copytruncate
+        daily
+        rotate 10
+        missingok
+        sharedscripts
+        compress
+        prerotate 
+                if grep "Unable to fork new process" /var/log/httpd/error_log 1>/dev/null 2>&1
+                then
+                        echo "UNIX ENG: OUT OF MEMORY DETECTED" >> /tmp/oom.txt
+                        /usr/bin/pkill -9 httpd
+                        /opt/apache/bin/apachectl start
+                fi
+        endscript
+}

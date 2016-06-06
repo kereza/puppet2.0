@@ -1,0 +1,5 @@
+[artifactory-puppetmaster]
+name=Artifactory for Ramp 2.0
+baseurl=http://puppetmaster/repo/artifactory-6-x86_64
+gpgcheck=0
+enabled=1

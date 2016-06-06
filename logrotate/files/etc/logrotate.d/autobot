@@ -1,0 +1,9 @@
+/var/log/autobot/autobot.log {
+    daily
+    sharedscripts
+    compress
+    missingok
+    rotate 5
+    create 0774 autobot autobot
+}
+

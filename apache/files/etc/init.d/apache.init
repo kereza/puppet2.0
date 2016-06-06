@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# chkconfig: - 85 15
+# description: Startup script for the PP Apache Web Server
+# processname: httpd
+# pidfile: /opt/apache/logs/httpd.pid
+# config: /opt/apache/conf/httpd.conf
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Path to the apachectl script, server binary, and short-form for messages.
+apachectl=/opt/apache/bin/apachectl
+httpd=/opt/apache/bin/httpd
+pid=${PIDFILE-/opt/apache/logs/httpd.pid}
+prog=apache
+RETVAL=0
+
+start() {
+        echo -n $"Starting $prog: "
+	daemon $apachectl start
+        RETVAL=$?
+        echo
+        return $RETVAL
+}
+stop() {
+        echo -n $"Stopping $prog: "
+        killproc $httpd
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && rm -f $pid
+}
+reload() {
+        echo -n $"Reloading $prog: "
+        killproc $httpd -HUP
+        RETVAL=$?
+        echo
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status $httpd
+        RETVAL=$?
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  condrestart)
+        if [ -f $pid ] ; then
+                stop
+                start
+        fi
+        ;;
+  reload)
+        reload
+        ;;
+  graceful|help|configtest|fullstatus)
+        $apachectl $@
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|restart|condrestart|reload|status|fullstatus|graceful|help|configtest}"
+        exit 1
+esac
+
+exit $RETVAL
+

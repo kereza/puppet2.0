@@ -1,0 +1,7 @@
+/export/cache/modx_cache/*/logs/error.log { 
+daily 
+rotate 7 
+sharedscripts 
+missingok 
+compress 
+} 

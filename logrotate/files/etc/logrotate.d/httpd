@@ -1,0 +1,31 @@
+/var/log/httpd/*log {
+        copytruncate
+        daily
+        rotate 5
+        missingok
+        sharedscripts
+        compress
+        prerotate 
+
+                DIGITS=1
+
+                HOSTID=$(hostname)
+
+                if [[ "$HOSTID" =~ ([0-9])([0-9]) ]]
+                then
+                        if [[ "${BASH_REMATCH[1]}" == 0 ]]
+                        then
+                                DIGITS="${BASH_REMATCH[2]}"
+                        else
+                                DIGITS="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+                        fi
+                fi
+
+                SLEEP=$(($DIGITS*30))
+
+                echo "Sleeping for $SLEEP seconds" > /tmp/UNIXENG_Apache_sleep.txt
+
+                sleep $SLEEP
+
+        endscript
+}

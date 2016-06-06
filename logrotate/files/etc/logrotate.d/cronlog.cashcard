@@ -1,0 +1,9 @@
+/opt/cashcard/cronlogs/*.log {
+        copytruncate
+        daily
+        dateext
+        rotate 7
+        missingok
+        compress
+        create 0774 ccpsftp ccpsftp
+}

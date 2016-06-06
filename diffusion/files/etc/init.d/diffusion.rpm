@@ -1,0 +1,123 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          diffusion
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the Diffusion server.
+# Description:       Startup script for the Diffusion server.
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+exec="/opt/Diffusion/bin/diffusion.sh >/dev/null 2>&1 &"
+pid_search_string=com.pushtechnology.diffusion.Diffusion
+
+SERVICE_NAME="diffusion"
+SERVICE_USER="diffusion"
+SERVICE_HOME="/opt/Diffusion"
+SERVICE_BASE="/opt/Diffusion"
+SERVICE_PID="/var/run/${SERVICE_NAME}.pid"
+LOCKFILE="/var/lock/subsys/${SERVICE_NAME}"
+SHUTDOWN_WAIT=30
+RETVAL=0
+
+check() {
+        pgrep -f ${pid_search_string} >/dev/null
+        return $?
+}
+
+start() {
+   echo "Starting ${SERVICE_NAME}: "
+   echo -n "Starting ${servicename}: "
+
+   check
+   if [ $? -eq 0 ] ;
+   then
+        warning "Already started"
+        echo
+        return 0
+   fi
+
+   export SERVICE_PID=$SERVICE_PID
+   touch $SERVICE_PID 2>&1 || RETVAL="4"
+   if [ "$RETVAL" -eq "0" -a "$?" -eq "0" ]; then
+       chown ${SERVICE_USER}:${SERVICE_USER} $SERVICE_PID
+   fi
+   su -s /bin/sh - $SERVICE_USER -c "nohup ${exec}"
+   RETVAL=$?
+
+   if [ "$RETVAL" -eq 0 ]; then
+       echo_success
+       touch $LOCKFILE
+   else
+       echo_failure
+   fi
+   echo
+   return $RETVAL
+
+}
+
+stop() {
+   echo "Shutting down ${SERVICE_NAME}: "
+   if [ -f "$LOCKFILE" ]; then
+     pid=`pgrep -f ${pid_search_string}`
+     kill ${pid}
+     while check; do
+        sleep 1
+     done
+     rm -f $LOCKFILE $SERVICE_PID
+     echo
+     success
+     return 0
+  fi
+}
+
+
+
+status() {
+        echo -n "Status of ${SERVICE_NAME}: "
+        check
+        if [ $? -eq 0 ] ;
+        then
+                echo -n "running"
+#                success
+                echo
+        else
+                echo -n "not running"
+#                success
+                echo
+        fi
+}
+
+case $1 in
+        start)
+                start
+                ;;
+        stop)
+                stop
+                ;;
+        status)
+                status
+                ;;
+        restart)
+                stop
+                start
+                ;;
+        reload)
+                echo "Reload not supported for ${SERVICE_NAME}"
+                ;;
+        condrestart)
+                [ -f ${LOCKFILE} ] && restart
+                ;;
+        *)
+                echo "Usage: ${SERVICE_NAME} {start|stop|status|restart}"
+                ;;
+esac
+
+exit $?
+
