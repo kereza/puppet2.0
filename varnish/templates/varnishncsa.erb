@@ -1,0 +1,8 @@
+## Options for running the deamon
+
+logfile="/var/log/varnish/varnishncsa.log"
+working_dir="<%= @working_dir %>"
+
+FORMAT="'%t %{NS-Client-IP}i \"%r\" %{Varnish:handling}x %s %b \"%{Referer}i\" \"%{User-agent}i\" %{Varnish:time_firstbyte}x'"
+
+DAEMON_OPTS="-a -w $logfile -D -P $pidfile -F $FORMAT -n $working_dir"
